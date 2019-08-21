@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'new Sam app
+
+  example passs
+
+  '
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://passthroughproject/3478545cd4277b6da4283c9a7bb8a006
+      Handler: app.handle
+      Runtime: nodejs8.10
+      Events:
+        HelloWorldAPI:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
