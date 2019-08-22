@@ -8,12 +8,12 @@ Description: >
 
 Resources:
 
-    HelloWorldFunction:
+    PassThroughFunction:
         Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
         Properties:
             CodeUri: app/
             #Handler: app.axios
-            Handler: app.handle
+            Handler: index.handler
             Runtime: nodejs8.10
 
             Events:
