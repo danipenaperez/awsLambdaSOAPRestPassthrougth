@@ -1,66 +1,123 @@
-SOAP
----------
+# The SOAPRestPassthrougth over lambda!
+
+This project contains SAM template to deploy a AWS that works as Passthrougth to final SOAP or HTTP(Rest or not) services.
+
+
+
+# RequestType: SOAP
+
 To execute a SOAP use the 'soap\*' headers:
+* **requesttype** (SOAP/http): if value is "SOAP" indicate that the internal request will be perform as SOAP.
+* **soapservicewsdl**: The url that contains the webservice description
+* **soapactionname**: The action to perform. Use "describe" to obtain a list of available operations on the service.
+* **data**: The json data that will be transform and send to the final SOAP service action.
 
-Example:
 
-Normal use:
-
-This example execute the action 'Multiply' of the webservice defined at http://www.dneonline.com/calculator.asmx?WSDL using the body Parameters.
-Notice that the service is SOAP, but our request is payload JSON. Internally is transformed and executed using the lib (https://github.com/vpulim/node-soap):
-
+Request example using the free webservice [http://www.dneonline.com/calculator.asmx?WSDL](http://www.dneonline.com/calculator.asmx?WSDL):
+```
 curl -X POST -k -H 'soapservicewsdl: http://www.dneonline.com/calculator.asmx?WSDL' -H 'soapactionname: Multiply' -H 'requesttype: SOAP' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass' --data '{"intA": 3, "intB": 4}'
-
+```
 Response:
-
+```
 {"MultiplyResult":12}
+```
 
-
-Debug Options:
-
-
-Using the Header -H 'debugoutput: true' the body will returns more info about the requested action from origin, like the original xml response from remote SOAP service.
+## Debugging options
+Using the Header -H '**debugoutput: true**' the body will returns more info about the requested action from origin, like the original xml response from remote SOAP service.
 
 Request:
-
+```
 curl -X POST -k -H 'soapservicewsdl: http://www.dneonline.com/calculator.asmx?WSDL' -H 'soapactionname: Multiply' -H 'requesttype: SOAP' -H 'debugoutput: true' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass' --data '{"intA": 3, "intB": 4}'
-
-Response
+```
+Response:
+```
 {
   "result": {
     "MultiplyResult": 12
   },
   "rawResponse": "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><soap:Body><MultiplyResponse xmlns=\"http://tempuri.org/\"><MultiplyResult>12</MultiplyResult></MultiplyResponse></soap:Body></soap:Envelope>"
 }
+```
 
+# RequestType: HTTP (REST or NOT)
 
+This example uses the [Swagger PetStore Rest Public Service](https://petstore.swagger.io/) to perform a GET over /inventory/store resource. Internally uses axios node lib [AXIOS](https://github.com/axios/axios)
+* **requesttype** (SOAP/http (default)): if null or not send will be used HTTP(s) way.
+* **url** : The final Url destination (supports query params.
+> The original request Verb is inherit to perform the internal request.
+> The query params will be get from "url" header not from the main request.
 
-REST
----------
-
-This example uses the "Swagger PetStore Rest Public Service" to perform a GET over /inventory/store resource. Internally uses axios node lib (https://github.com/axios/axios)
-The original request Verb is inherit to perform the internal request.
-
-Request: 
-
-'''
+Request
+```
 curl -X GET -k -H 'url: https://petstore.swagger.io/v2/store/inventory' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass'
+```
+Response:
+```
+{
+   "1":1,
+   "2334":1,
+   "drtert":1,
+   "sold":21,
+   "string":20,
+   "unavailable":1,
+   "Nonavailable":1,
+   "pending":22,
+   "available":2230,
+   "boidog":1,
+   "AVAILABLE":2,
+   "qqqq":1,
+   "sols":1,
+   "missing":1,
+   "Available":1,
+   "thth":1
+}
+```
 
-{"1":1,"2334":1,"drtert":1,"sold":21,"string":20,"unavailable":1,"Nonavailable":1,"pending":22,"available":2230,"boidog":1,"AVAILABLE":2,"qqqq":1,"sols":1,"missing":1,"Available":1,"thth":1}
-'''
+Using **debugouput** header to get more info about the internal proccess
 
-Debug options, if you want more info add the header "debugoutput.true"
-
-'''
+Request
+```
 curl -X GET -k -H 'url: https://petstore.swagger.io/v2/store/inventory' -H 'debugoutput: true' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass'
+```
+Response:
+```
+{
+   "data":{
+      "1":1,
+      "2334":1,
+      "drtert":1,
+      "sold":21,
+      "string":19,
+      "unavailable":1,
+      "Nonavailable":1,
+      "pending":22,
+      "available":2230,
+      "boidog":1,
+      "AVAILABLE":2,
+      "qqqq":1,
+      "sols":1,
+      "missing":1,
+      "Available":1,
+      "thth":1
+   },
+   "statusCode":200,
+   "responseHeaders":{
+      "date":"Wed, 21 Aug 2019 12:37:26 GMT",
+      "access-control-allow-origin":"*",
+      "access-control-allow-methods":"GET, POST, DELETE, PUT",
+      "access-control-allow-headers":"Content-Type, api_key, Authorization",
+      "content-type":"application/json",
+      "connection":"close",
+      "server":"Jetty(9.2.9.v20150224)"
+   }
+}
+```
 
-{"data":{"1":1,"2334":1,"drtert":1,"sold":21,"string":19,"unavailable":1,"Nonavailable":1,"pending":22,"available":2230,"boidog":1,"AVAILABLE":2,"qqqq":1,"sols":1,"missing":1,"Available":1,"thth":1},"statusCode":200,"responseHeaders":{"date":"Wed, 21 Aug 2019 12:37:26 GMT","access-control-allow-origin":"*","access-control-allow-methods":"GET, POST, DELETE, PUT","access-control-allow-headers":"Content-Type, api_key, Authorization","content-type":"application/json","connection":"close","server":"Jetty(9.2.9.v20150224)"}}
-'''
-
-
-To perform a POST,  :
-'''
-curl -X POST -H 'url: https://petstore.swagger.io/v2/store/order' -H 'Accept: application/json' -H 'Content-Type: application/json' -i ' https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass' --data '{
+**PERFORM A POST REQUEST...**
+In this way (using the free online REST PetStore Swagger Service:
+Request
+```
+curl -X POST -k -H 'url: https://petstore.swagger.io/v2/store/order' -H 'debugoutput: false' -H 'Content-Type: application/json' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass' --data '{
   "id": 0,
   "petId": 12,
   "quantity": 3,
@@ -68,13 +125,46 @@ curl -X POST -H 'url: https://petstore.swagger.io/v2/store/order' -H 'Accept: ap
   "status": "placed",
   "complete": false
 }'
-'''
+```
+Response:
+```
+{
+  "id": 0,
+  "petId": 12,
+  "quantity": 3,
+  "shipDate": "2019-08-21T08:02:29.251+0000",
+  "status": "placed",
+  "complete": false
+}
+```
 
+> All response internal headers add attached to the main response headers
+```
+1.  Status Code: 200 OK
+2.  access-control-allow-headers: Content-Type, api_key, Authorization
+3.  access-control-allow-methods: GET, POST, DELETE, PUT
+4.  access-control-allow-origin: *
+5.  content-length: 109
+6.  content-type: application/json
+7.  date: Thu, 22 Aug 2019 12:42:43 GMT
+8.  via: 1.1 b797234d27f385a39f8a380c54637a5b.cloudfront.net (CloudFront)
+9.  x-amz-apigw-id: e0sWbElkPHcFqAA=
+10.  x-amz-cf-id: n2K_Y-VHSC3-aVC__rVE1sK8yZErjwCRBB-1Fwpj-1PmEEp3oUkx7Q==
+11.  x-amz-cf-pop: MAD51-C1
+12.  x-amzn-remapped-connection: close
+13.  x-amzn-remapped-date: Thu, 22 Aug 2019 12:42:43 GMT
+14.  x-amzn-remapped-server: Jetty(9.2.9.v20150224)
+15.  x-amzn-requestid: 11d2914c-6dfc-42bb-83d7-90f34d585229
+16.  x-amzn-trace-id: Root=1-5d5e8dc2-07d9cc00c533d8902d86b7c0;Sampled=0
+17.  x-cache: Miss from cloudfront
+18.  x-firefox-spdy: h2
+```
 
-This an example with a request that fails caused by not set content-type correctly (the debugoutput:true adds the "requestInfo" to the response with info about the internal request).
-So the internal is not sending the application/json contentype correctly.
+**LETS try with the FAILED OPERATIONS MANAGEMENT**
+This example send the before request but without the "Content-type:application/json" headers, so the service will fails (note that the debugoutput:true header is added):
 
-'''
+Request
+```
 curl -X POST -k -H 'url: https://petstore.swagger.io/v2/store/order' -H 'debugoutput: true' -i 'https://b3fpk5gty7.execute-api.us-west-2.amazonaws.com/Prod/pass' --data '{
   "id": 0,
   "petId": 12,
@@ -83,8 +173,21 @@ curl -X POST -k -H 'url: https://petstore.swagger.io/v2/store/order' -H 'debugou
   "status": "placed",
   "complete": false
 }'
-
-Response
+```
+Response (the 415 error comes from the internal request)
+```
+1.  Status Code: 415 Unsupported Media Type
+2.  content-length: 2322
+3.  content-type: application/json
+4.  date: Thu, 22 Aug 2019 12:46:29 GMT
+5.  via: 1.1 40f375a15596f8d7b418a9c5dccce3d3.cloudfront.net (CloudFront)
+6.  x-amz-apigw-id: e0s52F9UPHcF0CA=
+7.  x-amz-cf-id: o-cfY9Z2HRcEGgqq6X78mSy0M2pR-_Gflft1bmnJ04Fj8gdZwh4npQ==
+8.  x-amz-cf-pop: MAD51-C1
+9.  x-amzn-requestid: 1990625b-d47e-448c-a8f5-1d90bffb8ec1
+10.  x-amzn-trace-id: Root=1-5d5e8ea5-31625828417e0c9a4da605ee;Sampled=0
+11.  x-cache: Error from cloudfront
+12.  x-firefox-spdy: h2
 
 {
   "body": {
@@ -98,7 +201,7 @@ Response
     "method": "POST"
   }
 }
+```
 
-
-'''
+And thats all..
 
