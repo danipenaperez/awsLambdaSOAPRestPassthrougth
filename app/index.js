@@ -7,6 +7,11 @@ const url = require("url");
 *  Main Handler ANY Method and PATH
 **/
 exports.handler = (event, context, callback) => {
+
+	console.log(JSON.stringify(event));
+console.log(JSON.stringify(context));
+
+
 	var requestInfo = parseToRequestInfo(event);
 	if(requestInfo.requestType == 'SOAP'){
 		executeSOAP(requestInfo, callback);
